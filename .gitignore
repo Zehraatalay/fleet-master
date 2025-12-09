@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Nuxt
+.nuxt/
+.output/
+dist/
+
+# Laravel / PHP
+vendor/
+storage/*.key
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+.env
+.env.*
+.phpunit.result.cache
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Misc
+*.log
