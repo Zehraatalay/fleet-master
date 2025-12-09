@@ -1,54 +1,22 @@
-<script setup lang="ts">
+<script setup>
 const { $fetchApi } = useApi();
 
-/**
- * Backend'in /api/dashboard/summary endpoint'inin döndürdüğü tip
- */
-interface DashboardSummary {
-  totalVehicles: number;
-  activeTrips: number;
-  vehiclesInService: number;
-  tripsToday: number;
-}
-
-/**
- * Trip list icin basic typler 
- */
-interface TripVehicle {
-  plate: string;
-  brand: string;
-}
-
-interface TripDriver {
-  name: string;
-}
-
-interface Trip {
-  id: number;
-  start_time: string;
-  status: string;
-  vehicle?: TripVehicle;
-  driver?: TripDriver;
-}
-
-interface PaginatedTrips {
-  data: Trip[];
-}
-
+// Dashboard özeti
 const {
   data: summary,
   pending: summaryPending,
   error: summaryError,
-} = await useAsyncData<DashboardSummary>('dashboard-summary', () =>
-  $fetchApi<DashboardSummary>('/dashboard/summary')
+} = await useAsyncData('dashboard-summary', () =>
+  $fetchApi('/dashboard/summary')
 );
 
+// Son seferler
 const {
   data: recentTrips,
   pending: tripsPending,
   error: tripsError,
-} = await useAsyncData<PaginatedTrips>('recent-trips', () =>
-  $fetchApi<PaginatedTrips>('/trips', { query: { page: 1 } })
+} = await useAsyncData('recent-trips', () =>
+  $fetchApi('/trips', { query: { page: 1 } })
 );
 </script>
 
