@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
+  content: [ //hangi dosyalar taraniyor/kullaniliyor 
     './app/components/**/*.{vue,js}',
     './app/layouts/**/*.{vue,js}',
     './app/pages/**/*.{vue,js}',
@@ -8,8 +8,8 @@ export default {
     './app/App.{js,vue}',
     './app/error.{js,vue}',
   ],
-  theme: {
+  theme: { //marka renkleri, font vs eklenebilir 
     extend: {},
   },
-  plugins: [],
+  plugins: [], //tailwind plugin'i eklemek icin 
 };
