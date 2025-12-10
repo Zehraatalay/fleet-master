@@ -1,5 +1,10 @@
 <script setup>
-const email = ref();
+definePageMeta({ //bu sayede sayfanin layout'u layouts/auth.vue oluyor 
+                 // ekstra layout belirtilmeyen kisimlarda default layout kullanilmis olacak 
+    layout: 'auth',
+});
+
+const email = ref('admin@example.com');
 const password = ref();
 
 const { login, loading, error, initAuth, isLoggedIn } = useAuth();

@@ -25,10 +25,7 @@ const {
 
 
 <template>
-  <!-- full-screen arka plan -->
-  <div class="min-h-screen bg-slate-900 text-slate-100">
-    <!-- ortalanmis container -->
-    <div class="max-w-6xl mx-auto px-4 md:px-6 py-10 space-y-6">
+    <div class="space-y-6">
       <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
 
       <!-- Cards --> 
@@ -119,5 +116,4 @@ const {
         Dashboard verileri alınırken hata oluştu.
       </div>
     </div>
-  </div>
 </template>
