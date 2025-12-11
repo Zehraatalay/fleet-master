@@ -19,9 +19,9 @@ onMounted(() => {
 
 const menuItems = [
   { label: 'Dashboard', to: '/' },
-  { label: 'Araçlar', to: '/vehicles' },
-  { label: 'Sürücüler', to: '/drivers' },
-  { label: 'Seferler', to: '/trips' },
+  { label: 'Vehicles', to: '/vehicles' },
+  { label: 'Drivers', to: '/drivers' },
+  { label: 'Trips', to: '/trips' },
 ];
 
 const isActive = (path) => {
@@ -87,7 +87,7 @@ const handleLogout = async () => {
           class="text-xs text-red-400 hover:text-red-300"
           @click="handleLogout"
         >
-          Çıkış Yap
+          Log out 
         </button>
       </div>
     </aside>
