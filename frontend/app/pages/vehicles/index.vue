@@ -5,19 +5,25 @@ definePageMeta({
   title: 'Vehicles',
 });
 
-// state filter icin 
+// Filters
+const filters = [
+  { label: 'All Vehicles', value: 'all' },
+  { label: 'Active', value: 'active' },
+  { label: 'In Service', value: 'in_service' },
+  { label: 'Inactive', value: 'inactive' },
+];
+
 const statusFilter = ref('all');
 
-// form modal icin state
-const showForm = ref(false);          // form acik mi kapali mi
-const editingVehicle = ref(null);     // null ise yeni kayit, obje ise edit
+// Form state
+const showForm = ref(false);
+const editingVehicle = ref(null);
 
-const fetchVehicles = () => { // /api/vehicles endpointinden list cekiyoruz
+// API
+const fetchVehicles = () => {
   const query = {};
 
   if (statusFilter.value !== 'all') {
-    // backend'de status filter whereIn ile calisiyor
-    // burada tek bir value gonderiyoruz 
     query['status[]'] = statusFilter.value;
   }
 
@@ -29,123 +35,167 @@ const {
   pending,
   error,
   refresh,
-} = await useAsyncData('vehicles-list', fetchVehicles);
+} = await useAsyncData('vehicles-list', fetchVehicles, {
+  server: false,
+  default: () => ({ data: [], total: 0 }),
+});
 
-// filter degisince listeyi yeniden cek 
+// Refresh when filter changes
 watch(statusFilter, () => {
   refresh();
 });
 
-// "+ New Record" butonuna basinca calisir
+// Derived data
+const vehicles = computed(() => vehiclesResponse.value?.data ?? []);
+
+const totalVehicles = computed(() => vehiclesResponse.value?.total ?? 0);
+
+// Form actions
 const openCreate = () => {
-  editingVehicle.value = null; // new record 
+  editingVehicle.value = null;
   showForm.value = true;
 };
 
-// tablo satirindaki "Edit" butonu basildiginda
 const openEdit = (vehicle) => {
-  editingVehicle.value = vehicle; // edit edilecek kayit
+  editingVehicle.value = vehicle;
   showForm.value = true;
 };
 
-// form kaydedildiginde
-const handleSaved = () => {
+const handleSaved = async () => {
   showForm.value = false;
-  refresh(); // listeyi yeniden cek
+  await refresh();
 };
 
-// form iptal edildiginde
 const handleCancel = () => {
   showForm.value = false;
 };
 
-// tablo satirindaki "Delete" butonu basildiginda
+// Delete
 const handleDelete = async (vehicle) => {
-  if (!confirm(`Do you want to delete the vehicle with the license plate "${vehicle.plate}"?`)) {
-    return;
-  }
+  const confirmed = confirm(
+    `Do you want to delete the vehicle with the license plate "${vehicle.plate}"?`
+  );
+
+  if (!confirmed) return;
 
   try {
     await $fetchApi(`/vehicles/${vehicle.id}`, {
       method: 'DELETE',
     });
-    refresh();
+
+    await refresh();
   } catch (err) {
     console.error(err);
-    alert('An error occurred while deleting');
+    alert('An error occurred while deleting the vehicle.');
   }
 };
 </script>
 
 <template>
   <div class="min-h-screen bg-slate-900 text-slate-100">
-    <div class="max-w-6xl mx-auto px-4 md:px-6 py-10 space-y-6">
-      <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Vehicles</h1>
+    <div class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+
+      <!-- Page Header -->
+      <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight text-white">
+            Vehicles
+          </h1>
+
+          <p class="mt-2 text-sm text-slate-400">
+            Manage and monitor your fleet vehicles.
+          </p>
+        </div>
+
         <button
           type="button"
-          class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white"
+          class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-950/30 transition-all hover:bg-indigo-500"
           @click="openCreate"
         >
-          + New Vehicle
+          <span class="text-lg leading-none">+</span>
+          Add Vehicle
         </button>
       </div>
 
-      <!-- Filters -->
-      <div class="flex flex-wrap gap-2">
-        <button
-          class="px-3 py-1 rounded-full border text-xs"
-          :class="statusFilter === 'all' ? 'bg-slate-700 border-slate-500' : 'border-slate-600'"
-          @click="statusFilter = 'all'"
+      <!-- Content -->
+      <div class="space-y-5">
+
+        <!-- List Header -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-100">
+              Fleet Overview
+            </h2>
+
+            <p class="mt-1 text-sm text-slate-400">
+              {{ totalVehicles }} vehicles found
+            </p>
+          </div>
+
+          <!-- Filters -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              v-for="filter in filters"
+              :key="filter.value"
+              type="button"
+              class="rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors"
+              :class="
+                statusFilter === filter.value
+                  ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-300'
+                  : 'border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+              "
+              @click="statusFilter = filter.value"
+            >
+              {{ filter.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div
+          v-if="pending"
+          class="rounded-xl border border-slate-700/70 bg-slate-800/40 px-6 py-16 text-center"
         >
-          All
-        </button> <!-- backendde VehicleController@index icinde status array destekledigimiz icin queryde status[]=active gibi gonderiyoruz -->
-        <button
-          class="px-3 py-1 rounded-full border text-xs"
-          :class="statusFilter === 'active' ? 'bg-slate-700 border-slate-500' : 'border-slate-600'"
-          @click="statusFilter = 'active'"
+          <div class="text-sm text-slate-400">
+            Loading vehicles...
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div
+          v-else-if="error"
+          class="rounded-xl border border-red-500/20 bg-red-500/10 px-6 py-6"
         >
-          Active
-        </button>
-        <button
-          class="px-3 py-1 rounded-full border text-xs"
-          :class="statusFilter === 'in_service' ? 'bg-slate-700 border-slate-500' : 'border-slate-600'"
-          @click="statusFilter = 'in_service'"
-        >
-          In Service
-        </button>
-        <button
-          class="px-3 py-1 rounded-full border text-xs"
-          :class="statusFilter === 'inactive' ? 'bg-slate-700 border-slate-500' : 'border-slate-600'"
-          @click="statusFilter = 'inactive'"
-        >
-          Inactive
-        </button>
+          <p class="text-sm font-medium text-red-300">
+            Unable to load vehicles.
+          </p>
+
+          <button
+            type="button"
+            class="mt-3 text-xs font-semibold text-red-200 underline"
+            @click="refresh()"
+          >
+            Try again
+          </button>
+        </div>
+
+        <!-- Table -->
+        <VehicleTable
+          v-else
+          :vehicles="vehicles"
+          @edit="openEdit"
+          @delete="handleDelete"
+        />
       </div>
 
-      <!-- Vehicles Table -->
-      <VehicleTable
-        :vehicles="vehiclesResponse?.data || []"
-        @edit="openEdit"
-        @delete="handleDelete"
-      />
-
-      <!-- State Messages -->
-      <div v-if="pending" class="text-sm text-slate-400">
-        Loading...
-      </div>
-
-      <div v-if="error" class="text-sm text-red-400">
-        An error occurred while retrieving the vehicle list
-      </div>
-
-      <!-- Vehicle Form Modal (create + edit) -->
+      <!-- Form Modal -->
       <VehicleForm
         v-if="showForm"
         :model-value="editingVehicle"
         @saved="handleSaved"
         @cancel="handleCancel"
       />
+
     </div>
   </div>
 </template>

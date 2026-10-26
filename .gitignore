@@ -20,6 +20,7 @@ storage/framework/views/*
 bootstrap/cache/*
 .env
 .env.*
+!.env.example
 .phpunit.result.cache
 
 # IDE / Editor

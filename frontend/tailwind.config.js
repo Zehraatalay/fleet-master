@@ -4,7 +4,7 @@ export default {
     './app/components/**/*.{vue,js}',
     './app/layouts/**/*.{vue,js}',
     './app/pages/**/*.{vue,js}',
-    './app/plugins/**/*.{js}',
+    './app/plugins/**/*.{js,ts}',
     './app/App.{js,vue}',
     './app/error.{js,vue}',
   ],

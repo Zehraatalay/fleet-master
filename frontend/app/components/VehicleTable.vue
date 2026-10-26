@@ -1,84 +1,161 @@
 <script setup>
-const props = defineProps({
+defineProps({
   vehicles: {
     type: Array,
     default: () => [],
   },
 });
 
-// tablo satırlarından edit / delete event'leri ile haber vermek için:
 const emit = defineEmits(['edit', 'delete']);
+
+const statusConfig = {
+  active: {
+    label: 'Active',
+    classes: 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/20',
+  },
+  in_service: {
+    label: 'In Service',
+    classes: 'bg-amber-500/10 text-amber-400 ring-amber-500/20',
+  },
+  inactive: {
+    label: 'Inactive',
+    classes: 'bg-slate-500/10 text-slate-400 ring-slate-500/20',
+  },
+};
+
+const getStatus = (status) => {
+  return statusConfig[status] ?? {
+    label: status ?? 'Unknown',
+    classes: 'bg-slate-500/10 text-slate-400 ring-slate-500/20',
+  };
+};
+
+const formatKm = (km) => {
+  if (km === null || km === undefined) return '—';
+
+  return new Intl.NumberFormat('en-US').format(km);
+};
 </script>
 
-<!-- 
-vehicles prop'u olarak gelen list'i tabloda gosteriyor
-Tailwind ile koyu tema + borderlı gorunum
-hic arac yoksa arac bulunmadi 
--->
-
 <template>
-  <div class="overflow-x-auto rounded-lg border border-slate-700 bg-slate-800/60">
-    <table class="min-w-full text-sm">
-      <thead class="bg-slate-900/70 text-slate-300">
-        <tr>
-          <th class="px-4 py-2 text-left font-medium">Plate</th>
-          <th class="px-4 py-2 text-left font-medium">Brand / Model</th>
-          <th class="px-4 py-2 text-left font-medium">Year</th>
-          <th class="px-4 py-2 text-left font-medium">KM</th>
-          <th class="px-4 py-2 text-left font-medium">State</th>
-          <th class="px-4 py-2 text-right font-medium">Transactions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="vehicle in vehicles"
-          :key="vehicle.id"
-          class="border-t border-slate-700"
-        >
-          <td class="px-4 py-2">
-            {{ vehicle.plate }}
-          </td>
-          <td class="px-4 py-2">
-            {{ vehicle.brand }} {{ vehicle.model }}
-          </td>
-          <td class="px-4 py-2">
-            {{ vehicle.year ?? '-' }}
-          </td>
-          <td class="px-4 py-2">
-            {{ vehicle.current_km }}
-          </td>
-          <td class="px-4 py-2">
-            {{ vehicle.status }}
-          </td>
-          <td class="px-4 py-2 text-right space-x-2">
-            <!-- edit butonu -->
-            <button
-              type="button"
-              class="px-2 py-1 text-xs rounded bg-slate-700 hover:bg-slate-600"
-              @click="emit('edit', vehicle)"
-            >
-              Edit
-            </button>
-            <!-- silme butonu -->
-            <button
-              type="button"
-              class="px-2 py-1 text-xs rounded bg-red-600 hover:bg-red-500"
-              @click="emit('delete', vehicle)"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
+  <div
+    class="overflow-hidden rounded-xl border border-slate-700/70 bg-slate-800/40 shadow-sm"
+  >
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-slate-800/70">
+          <tr class="border-b border-slate-700/70">
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Plate
+            </th>
 
-        <tr v-if="vehicles.length === 0">
-          <td
-            colspan="6"
-            class="px-4 py-6 text-center text-slate-400"
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Brand / Model
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Year
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Mileage
+            </th>
+
+            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Status
+            </th>
+
+            <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Actions
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-700/50">
+          <tr
+            v-for="vehicle in vehicles"
+            :key="vehicle.id"
+            class="transition-colors duration-150 hover:bg-slate-700/30"
           >
-            Vehicle not found
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <!-- Plate -->
+            <td class="whitespace-nowrap px-6 py-4">
+              <span class="font-semibold text-white">
+                {{ vehicle.plate }}
+              </span>
+            </td>
+
+            <!-- Brand / Model -->
+            <td class="px-6 py-4">
+              <div class="font-medium text-slate-200">
+                {{ vehicle.brand }}
+              </div>
+
+              <div class="mt-0.5 text-xs text-slate-400">
+                {{ vehicle.model }}
+              </div>
+            </td>
+
+            <!-- Year -->
+            <td class="whitespace-nowrap px-6 py-4 text-slate-300">
+              {{ vehicle.year ?? '—' }}
+            </td>
+
+            <!-- Mileage -->
+            <td class="whitespace-nowrap px-6 py-4 text-slate-300">
+              {{ formatKm(vehicle.current_km) }}
+              <span class="text-xs text-slate-500">km</span>
+            </td>
+
+            <!-- Status -->
+            <td class="whitespace-nowrap px-6 py-4">
+              <span
+                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset"
+                :class="getStatus(vehicle.status).classes"
+              >
+                <span
+                  class="mr-2 h-1.5 w-1.5 rounded-full bg-current"
+                ></span>
+
+                {{ getStatus(vehicle.status).label }}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="whitespace-nowrap px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:border-slate-500 hover:bg-slate-700"
+                  @click="emit('edit', vehicle)"
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  class="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20"
+                  @click="emit('delete', vehicle)"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty state -->
+          <tr v-if="vehicles.length === 0">
+            <td colspan="6" class="px-6 py-16 text-center">
+              <div class="text-sm font-medium text-slate-300">
+                No vehicles found
+              </div>
+
+              <p class="mt-1 text-xs text-slate-500">
+                Try changing your filters or add a new vehicle.
+              </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
